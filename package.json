@@ -1,0 +1,25 @@
+{
+  "name": "aliexpress-reverse-search",
+  "version": "1.0.0",
+  "description": "aliexpress reverse search",
+  "homepage": "https://github.com/Charmunks/alisearch#readme",
+  "bugs": {
+    "url": "https://github.com/Charmunks/alisearch/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Charmunks/alisearch.git"
+  },
+  "license": "ISC",
+  "author": "Charmunk",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "test",
+    "dev": "nodemon index.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0"
+  }
+}
