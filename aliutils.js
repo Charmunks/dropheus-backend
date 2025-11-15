@@ -43,6 +43,58 @@ function getCacheKey(options) {
 }
 
 /**
+ * hackclub ai sillyness
+ * @param {string} query 
+ * @returns {Promise<string>} 
+ */
+async function optimizeSearchQuery(query) {
+    const hackclubApiKey = process.env.HACKCLUB_API_KEY;
+    
+    if (!hackclubApiKey) {
+        console.warn('HACKCLUB_API_KEY not found in .env, using original query');
+        return query;
+    }
+
+    try {
+        console.log(`Optimizing search query: "${query}"`);
+        
+        const response = await fetch('https://ai.hackclub.com/proxy/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${hackclubApiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: 'qwen/qwen3-32b',
+                messages: [{
+                    role: 'user',
+                    content: `You are a search query optimizer for AliExpress. Given a user's search query, generate a better, more concise search term that would yield better results on AliExpress. Make sure the search is short/general enough to actually yield responses. Return ONLY the optimized search query, nothing else. No explanations, no quotes, just the search term.
+
+User's search query: ${query}`
+                }]
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HackClub AI request failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const optimizedQuery = data.choices?.[0]?.message?.content?.trim();
+        
+        if (optimizedQuery) {
+            console.log(`Optimized query: "${optimizedQuery}"`);
+            return optimizedQuery;
+        }
+        
+        return query;
+    } catch (error) {
+        console.warn(`Error optimizing query: ${error.message}. Using original query.`);
+        return query;
+    }
+}
+
+/**
  * search aliexpress
  * @param {Object} options 
  * @param {string} options.q - Search query
@@ -63,6 +115,7 @@ async function searchAliExpress(options) {
         throw new Error('Search query (q) is required');
     }
 
+    // Check cache with original query first
     const cacheKey = getCacheKey({ q, page, sort });
     const cache = loadCache();
     
@@ -70,6 +123,9 @@ async function searchAliExpress(options) {
         console.log('Returning cached results for:', cacheKey);
         return cache[cacheKey];
     }
+
+    // Optimize the search query using HackClub AI only if not cached
+    const optimizedQuery = await optimizeSearchQuery(q);
     if (!rapidApiKey) {
         throw new Error('RapidAPI key is required. Set RAPIDAPI_KEY in .env file');
     }
@@ -84,7 +140,7 @@ async function searchAliExpress(options) {
     }
     
     const url = new URL('https://aliexpress-datahub.p.rapidapi.com/item_search_2');
-    url.searchParams.append('q', q);
+    url.searchParams.append('q', optimizedQuery);
     url.searchParams.append('page', page.toString());
     url.searchParams.append('sort', sort);
 

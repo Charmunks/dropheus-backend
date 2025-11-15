@@ -2,9 +2,11 @@
 
 This is the backend for Dropheus, which is a chrome extension that allows you to select an Etsy, Amazon, or Ebay item and check if there are matching items on AliExpress, to detect dropshipping. 
 
-The backend takes in requests at /search?q=searchTerm and will return the first 3 results from aliexpress, with their urls, prices, and images. This is used by the Dropheus chrome extension to check if there are matching items on AliExpress for an Etsy, Amazon, or Ebay item.
+The backend takes in requests at /search?q=itemInfo and will return the first 3 results from aliexpress, with their urls, prices, and images. This is used by the Dropheus chrome extension to check if there are matching items on AliExpress for an Etsy, Amazon, or Ebay item.
 
-The backend caches all results so any repeat search query will be pulled from cache instead of making a new aliexpress api request. 
+This is done by first putting the provided info through hackclub's ai with a prompt requesting the AI generate a search query for the item. The backend then uses this search query to make a request to the aliexpress api and returns the results.
+
+The backend also caches all results so any repeat search query will be pulled from cache instead of making a new aliexpress api request. 
 
 ## Setup
 ~~~
